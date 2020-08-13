@@ -50,8 +50,7 @@ void printFileList(int index,int max){
 		}else{
 			printf("     ");
 		}
-		printf(fileNameList[curIndex]);
-		printf("\n");
+		printf("%s\n",fileNameList[curIndex]);
 	}
 	return;
 }
@@ -175,7 +174,7 @@ int main(int argc, char **argv) {
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 	printf("\x1b[2;0H");	
 	printf("+---------------------+\n");
-	printf("|  Mii Importer v1.0  |\n");
+	printf("| Mii Importer v1.0.1 |\n");
     printf("| developed by Kazuki |\n");
     printf("+---------------------+\n");
     printf("[*] Initializing ISFS subsystem...");
