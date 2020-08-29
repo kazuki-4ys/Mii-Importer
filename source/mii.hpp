@@ -18,22 +18,12 @@
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 
-typedef struct {
-	unsigned char rawData[MII_FILE_SIZE];
-    char name[MII_NAME_LENGTH];
-	unsigned int month;
-	unsigned int day;
-	unsigned int favColor;
-} mii;
-
-int installMii(char*,char*);
+unsigned short getCrc(unsigned char*,int);
+int installMii(const char*);
 long getFileSize(int fd);
 int isfsGetFileSize(int);
 int miiRawDataCheck(unsigned char*);
-int miiFileWrite(mii*,int,char*);
 void*allocate_memory(unsigned int);
-void getMiiInfo(mii*);
-void allGetMiiInfo(mii*,int);
 unsigned short getCrc(unsigned char*,int);
 
 #endif //_MII_H_

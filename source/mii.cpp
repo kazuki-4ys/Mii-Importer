@@ -1,15 +1,28 @@
-#include "mii.h"
+#include "mii.hpp"
 
-int installMii(char *dir,char *fileName){
+unsigned short getCrc(unsigned char*buf,int size){
+    unsigned int crc = 0x0000;
+    int byteIndex,bitIndex,counter;
+    for (byteIndex = 0; byteIndex < size; byteIndex++) {
+        for (bitIndex = 7; bitIndex >= 0; bitIndex--) {
+            crc = (((crc << 1) | ((buf[byteIndex] >> bitIndex) & 0x1)) ^
+            (((crc & 0x8000) != 0) ? 0x1021 : 0)); 
+        }
+    }
+    for (counter = 16; counter > 0; counter--) {
+        crc = ((crc << 1) ^ (((crc & 0x8000) != 0) ? 0x1021 : 0));
+    }
+    return (unsigned short)(crc & 0xFFFF);
+}
+
+int installMii(const char *path){
     const char TARGET_PATH[] = "/shared2/menu/FaceLib/RFL_DB.dat";
     const char DAT_MAGIC[] = "RNOD";
 	const char RKG_MAGIC[] = "RKGD";
 	int nandFd,fd,fileSize,miiNum = 0;
 	long miiFileSize;
 	char headBuf[5] = {};
-	char path[128] = {};
 	unsigned short crc;
-	sprintf(path,"%s/%s",dir,fileName);
 	unsigned char *DatFileBuf; //RFL_DB.datを格納するバッファ
     nandFd = ISFS_Open(TARGET_PATH,ISFS_OPEN_RW);
 	if(nandFd < 1){
@@ -20,7 +33,7 @@ int installMii(char *dir,char *fileName){
         ISFS_Close(nandFd);
 		return -1;
 	}
-	DatFileBuf = allocate_memory(fileSize);//32バイト境界に載せる必要があるため、mallocは使用不可
+	DatFileBuf = (unsigned char*)allocate_memory(fileSize);//32バイト境界に載せる必要があるため、mallocは使用不可
     if(DatFileBuf == NULL){
         ISFS_Close(nandFd);
         printf("Error:allocate_memory\n");
@@ -125,40 +138,8 @@ int miiRawDataCheck(unsigned char*src){
 	return -1;
 }
 
-int miiFileWrite(mii *Miis,int index,char *dir){
-	char path[128] = {};
-	FILE *f;
-	sprintf(path,"%s/%08d.MII",dir,index + 1);
-    f = fopen(path,"wb");
-	if(!f){
-		printf("Error:fopen\n");
-		return -1;
-	}
-	fwrite((Miis[index]).rawData,sizeof(unsigned char),MII_FILE_SIZE,f);
-	fclose(f);
-	return 0;
-}
-
 void*allocate_memory(unsigned int size){
     void*buf = memalign(32,(size+31)&(~31));
 	memset(buf,0,(size+31)&(~31));
 	return buf;
-}
-
-void getMiiInfo(mii *pmii){
-	int i;
-    for(i = 0;i < MII_NAME_LENGTH;i++){
-		pmii->name[i] = pmii->rawData[2 + i * 2];
-	}
-	pmii->month = (pmii->rawData[0] >> 2) & 0xf;
-	pmii->day = ((pmii->rawData[0] & 3) << 3) + (pmii->rawData[1] >> 5);
-	pmii->favColor = (pmii->rawData[1] >> 1) & 0xf;
-	return;
-}
-
-void allGetMiiInfo(mii*Miis,int num){
-	int i;
-    for(i = 0;i < num;i++){
-		getMiiInfo(Miis + i);
-	}
 }
